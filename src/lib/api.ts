@@ -242,12 +242,12 @@ export async function adminCreateProduct(input: ProductInput): Promise<Product> 
 }
 
 export async function adminUpdateProduct(id: string, input: Partial<ProductInput>): Promise<void> {
-  if (USE_MOCK) return delay();
+  if (USE_MOCK) { await delay(); return; }
   await http(`/admin/products/${id}`, { method: "PUT", auth: true, body: input });
 }
 
 export async function adminToggleProduct(id: string, active: boolean): Promise<void> {
-  if (USE_MOCK) return delay();
+  if (USE_MOCK) { await delay(); return; }
   await http(`/admin/products/${id}/${active ? "active" : "desactive"}`, {
     method: "PATCH",
     auth: true,
@@ -255,7 +255,7 @@ export async function adminToggleProduct(id: string, active: boolean): Promise<v
 }
 
 export async function adminDeleteProduct(id: string): Promise<void> {
-  if (USE_MOCK) return delay();
+  if (USE_MOCK) { await delay(); return; }
   await http(`/admin/products/${id}/deleted`, { method: "DELETE", auth: true });
 }
 
