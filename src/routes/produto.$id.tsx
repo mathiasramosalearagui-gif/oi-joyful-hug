@@ -14,26 +14,29 @@ const productQuery = (id: string) =>
     },
   });
 
+import type { Product } from "@/lib/api";
+
 export const Route = createFileRoute("/produto/$id")({
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: loaderData
-          ? `${loaderData.nameOfProduct} — Estação Infinita`
-          : "Produto — Estação Infinita",
-      },
-      {
-        name: "description",
-        content: loaderData?.description ?? "Detalhes do produto",
-      },
-      ...(loaderData?.image
-        ? [
-            { property: "og:image", content: loaderData.image },
-            { name: "twitter:image", content: loaderData.image },
-          ]
-        : []),
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const p = loaderData as Product | undefined;
+    return {
+      meta: [
+        {
+          title: p ? `${p.nameOfProduct} — Estação Infinita` : "Produto — Estação Infinita",
+        },
+        {
+          name: "description",
+          content: p?.description ?? "Detalhes do produto",
+        },
+        ...(p?.image
+          ? [
+              { property: "og:image", content: p.image },
+              { name: "twitter:image", content: p.image },
+            ]
+          : []),
+      ],
+    };
+  },
   loader: ({ context, params }) =>
     context.queryClient.ensureQueryData(productQuery(params.id)),
   component: ProductPage,
