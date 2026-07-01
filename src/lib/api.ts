@@ -93,30 +93,40 @@ function extractProducts(payload: unknown): Product[] {
 /* --------------------------- Catálogo ---------------------------- */
 
 export async function fetchAllProducts(): Promise<Product[]> {
-  const { data } = await api.get("/api/products");
+  const { data } = await api.get("/product/list");
   return extractProducts(data);
 }
 
 export async function fetchFeaturedProducts(): Promise<Product[]> {
+  try {
+    const { data } = await api.get("/product/featured");
+    const list = extractProducts(data);
+    if (list.length) return list;
+  } catch {
+    // fallback abaixo
+  }
   const all = await fetchAllProducts();
   return all.filter((p) => p.main && p.available);
 }
 
+export async function filterProducts(query: Record<string, string>): Promise<Product[]> {
+  const { data } = await api.get("/product", { params: query });
+  return extractProducts(data);
+}
+
 export async function fetchProductsByCategory(category: string): Promise<Product[]> {
-  const all = await fetchAllProducts();
-  return all.filter((p) =>
-    p.category.some((c) => c.toLowerCase() === category.toLowerCase()),
-  );
+  try {
+    return await filterProducts({ category });
+  } catch {
+    const all = await fetchAllProducts();
+    return all.filter((p) =>
+      p.category.some((c) => c.toLowerCase() === category.toLowerCase()),
+    );
+  }
 }
 
 export async function fetchProductById(id: string): Promise<Product | undefined> {
-  try {
-    const { data } = await api.get(`/api/products/${id}`);
-    const one = unwrap<Product>(data);
-    if (one && (one as Product)._id) return one as Product;
-  } catch {
-    // fallback abaixo
-  }
+  // Backend público não expõe GET /product/:id — buscamos na lista.
   const all = await fetchAllProducts();
   return all.find((p) => p._id === id);
 }
