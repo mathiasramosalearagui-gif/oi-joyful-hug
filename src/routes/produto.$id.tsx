@@ -1,8 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { useSuspenseQuery, queryOptions, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Check, Package, ShoppingCart } from "lucide-react";
 
-import { fetchProductById, formatBRL } from "@/lib/api";
+import { addToCart, checkout, fetchProductById, formatBRL } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 const productQuery = (id: string) =>
   queryOptions({
