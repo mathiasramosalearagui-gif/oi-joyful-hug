@@ -1,13 +1,10 @@
 /**
  * API — Estação Infinita
- * Camada de domínio sobre o cliente HTTP em src/services/api.ts.
- *
- * Endpoints principais:
- *   POST /auth/login          -> { token, user } (ou { data: { token, user } })
- *   POST /auth/register
- *   GET  /api/products        -> lista de produtos
- *   GET  /api/products/:id
- *   Admin: /admin/products/*
+ * Backend Express montado com:
+ *   app.use("/auth",    authRoutes)
+ *   app.use("/product", productRoutes)   // GET /featured, GET /list, GET / (filtro)
+ *   app.use("/users",   userRoutes)      // /me, /me/history, /me/cart[/:product], /sales/checkout/:product
+ *   app.use("/admin",   adminRoutes)     // /products*, /users, /relatory, /sales
  */
 import { api, TOKEN_KEY } from "@/services/api";
 
