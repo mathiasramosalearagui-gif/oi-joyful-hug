@@ -64,6 +64,26 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { data: p } = useSuspenseQuery(productQuery(id));
   const soldOut = !p.available || p.amount === 0;
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const addMut = useMutation({
+    mutationFn: () => addToCart(p._id),
+    onSuccess: () => navigate({ to: "/carrinho" }),
+  });
+  const buyMut = useMutation({
+    mutationFn: () => checkout(p._id),
+    onSuccess: () => navigate({ to: "/conta" }),
+  });
+
+  function requireAuth(fn: () => void) {
+    if (!isAuthenticated) {
+      navigate({ to: "/login" });
+      return;
+    }
+    fn();
+  }
+
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
