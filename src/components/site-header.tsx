@@ -51,13 +51,13 @@ export function SiteHeader() {
             <Search className="h-4 w-4" />
             <span>Buscar produtos…</span>
           </button>
-          <button
-            type="button"
+          <Link
+            to="/carrinho"
             aria-label="Carrinho"
             className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-surface text-muted-foreground transition-colors hover:text-foreground"
           >
             <ShoppingCart className="h-4 w-4" />
-          </button>
+          </Link>
 
           {isAuthenticated ? (
             <>
