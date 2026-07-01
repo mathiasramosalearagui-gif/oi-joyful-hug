@@ -1,13 +1,10 @@
 /**
  * API — Estação Infinita
- * Camada de domínio sobre o cliente HTTP em src/services/api.ts.
- *
- * Endpoints principais:
- *   POST /auth/login          -> { token, user } (ou { data: { token, user } })
- *   POST /auth/register
- *   GET  /api/products        -> lista de produtos
- *   GET  /api/products/:id
- *   Admin: /admin/products/*
+ * Backend Express montado com:
+ *   app.use("/auth",    authRoutes)
+ *   app.use("/product", productRoutes)   // GET /featured, GET /list, GET / (filtro)
+ *   app.use("/users",   userRoutes)      // /me, /me/history, /me/cart[/:product], /sales/checkout/:product
+ *   app.use("/admin",   adminRoutes)     // /products*, /users, /relatory, /sales
  */
 import { api, TOKEN_KEY } from "@/services/api";
 
@@ -96,30 +93,40 @@ function extractProducts(payload: unknown): Product[] {
 /* --------------------------- Catálogo ---------------------------- */
 
 export async function fetchAllProducts(): Promise<Product[]> {
-  const { data } = await api.get("/api/products");
+  const { data } = await api.get("/product/list");
   return extractProducts(data);
 }
 
 export async function fetchFeaturedProducts(): Promise<Product[]> {
+  try {
+    const { data } = await api.get("/product/featured");
+    const list = extractProducts(data);
+    if (list.length) return list;
+  } catch {
+    // fallback abaixo
+  }
   const all = await fetchAllProducts();
   return all.filter((p) => p.main && p.available);
 }
 
+export async function filterProducts(query: Record<string, string>): Promise<Product[]> {
+  const { data } = await api.get("/product", { params: query });
+  return extractProducts(data);
+}
+
 export async function fetchProductsByCategory(category: string): Promise<Product[]> {
-  const all = await fetchAllProducts();
-  return all.filter((p) =>
-    p.category.some((c) => c.toLowerCase() === category.toLowerCase()),
-  );
+  try {
+    return await filterProducts({ category });
+  } catch {
+    const all = await fetchAllProducts();
+    return all.filter((p) =>
+      p.category.some((c) => c.toLowerCase() === category.toLowerCase()),
+    );
+  }
 }
 
 export async function fetchProductById(id: string): Promise<Product | undefined> {
-  try {
-    const { data } = await api.get(`/api/products/${id}`);
-    const one = unwrap<Product>(data);
-    if (one && (one as Product)._id) return one as Product;
-  } catch {
-    // fallback abaixo
-  }
+  // Backend público não expõe GET /product/:id — buscamos na lista.
   const all = await fetchAllProducts();
   return all.find((p) => p._id === id);
 }
@@ -173,7 +180,65 @@ export async function adminDeleteProduct(id: string): Promise<void> {
   await api.delete(`/admin/products/${id}/deleted`);
 }
 
-/* ------------------------------ Util ---------------------------- */
+export async function adminListUsers(): Promise<AuthUser[]> {
+  const { data } = await api.get("/admin/users");
+  const p = data as Record<string, unknown> | undefined;
+  if (Array.isArray(data)) return data as AuthUser[];
+  return ((p?.users as AuthUser[]) ?? (p?.data as AuthUser[]) ?? []);
+}
+
+export async function adminGetSales(): Promise<unknown[]> {
+  const { data } = await api.get("/admin/sales");
+  return (Array.isArray(data) ? data : (data as { sales?: unknown[] })?.sales) ?? [];
+}
+
+export async function adminGetRelatory(): Promise<unknown> {
+  const { data } = await api.get("/admin/relatory");
+  return unwrap<unknown>(data);
+}
+
+/* ------------------------------ Usuário logado ---------------------------- */
+
+export interface CartItem {
+  product: Product;
+  quantity?: number;
+}
+
+export async function fetchMe(): Promise<AuthUser> {
+  const { data } = await api.get("/users/me");
+  return unwrap<AuthUser>(data);
+}
+
+export async function updateMe(payload: Partial<AuthUser>): Promise<AuthUser> {
+  const { data } = await api.put("/users/me", payload);
+  return unwrap<AuthUser>(data);
+}
+
+export async function fetchMyHistory(): Promise<unknown[]> {
+  const { data } = await api.get("/users/me/history");
+  return (Array.isArray(data) ? data : (data as { history?: unknown[] })?.history) ?? [];
+}
+
+export async function fetchMyCart(): Promise<CartItem[]> {
+  const { data } = await api.get("/users/me/cart");
+  const raw = Array.isArray(data)
+    ? data
+    : (data as { cart?: unknown[] })?.cart ?? (data as { data?: unknown[] })?.data ?? [];
+  return raw as CartItem[];
+}
+
+export async function addToCart(productId: string): Promise<void> {
+  await api.patch(`/users/me/cart/${productId}`);
+}
+
+export async function removeFromCart(productId: string): Promise<void> {
+  await api.delete(`/users/me/cart/${productId}`);
+}
+
+export async function checkout(productId: string): Promise<unknown> {
+  const { data } = await api.post(`/users/sales/checkout/${productId}`);
+  return unwrap<unknown>(data);
+}
 
 export function formatBRL(value: number): string {
   return new Intl.NumberFormat("pt-BR", {

@@ -1,8 +1,9 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { useSuspenseQuery, queryOptions, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Check, Package, ShoppingCart } from "lucide-react";
 
-import { fetchProductById, formatBRL } from "@/lib/api";
+import { addToCart, checkout, fetchProductById, formatBRL } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
 const productQuery = (id: string) =>
   queryOptions({
@@ -63,6 +64,26 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { data: p } = useSuspenseQuery(productQuery(id));
   const soldOut = !p.available || p.amount === 0;
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const addMut = useMutation({
+    mutationFn: () => addToCart(p._id),
+    onSuccess: () => navigate({ to: "/carrinho" }),
+  });
+  const buyMut = useMutation({
+    mutationFn: () => checkout(p._id),
+    onSuccess: () => navigate({ to: "/conta" }),
+  });
+
+  function requireAuth(fn: () => void) {
+    if (!isAuthenticated) {
+      navigate({ to: "/login" });
+      return;
+    }
+    fn();
+  }
+
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -139,19 +160,27 @@ function ProductPage() {
           <div className="mt-4 flex gap-3">
             <button
               type="button"
-              disabled={soldOut}
+              disabled={soldOut || addMut.isPending}
+              onClick={() => requireAuth(() => addMut.mutate())}
               className="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-md bg-primary px-4 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ShoppingCart className="h-4 w-4" />
-              Adicionar ao carrinho
+              {addMut.isPending ? "Adicionando…" : "Adicionar ao carrinho"}
             </button>
             <button
               type="button"
-              className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-surface px-4 font-medium text-foreground transition-colors hover:border-primary/60"
+              disabled={soldOut || buyMut.isPending}
+              onClick={() => requireAuth(() => buyMut.mutate())}
+              className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-surface px-4 font-medium text-foreground transition-colors hover:border-primary/60 disabled:opacity-50"
             >
-              Comprar agora
+              {buyMut.isPending ? "Processando…" : "Comprar agora"}
             </button>
           </div>
+          {(addMut.error || buyMut.error) && (
+            <p className="mt-2 text-sm text-destructive">
+              {(addMut.error as Error)?.message || (buyMut.error as Error)?.message}
+            </p>
+          )}
 
           <dl className="mt-6 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-lg border border-border/60 bg-surface/50 p-3">
