@@ -221,10 +221,67 @@ export async function fetchMyHistory(): Promise<unknown[]> {
 
 export async function fetchMyCart(): Promise<CartItem[]> {
   const { data } = await api.get("/users/me/cart");
-  const raw = Array.isArray(data)
-    ? data
-    : (data as { cart?: unknown[] })?.cart ?? (data as { data?: unknown[] })?.data ?? [];
-  return raw as CartItem[];
+  if (import.meta.env.DEV) console.log("[cart] /users/me/cart response:", data);
+
+  // Localiza o array do carrinho em qualquer formato conhecido
+  const d = data as Record<string, unknown> | unknown[];
+  const raw: unknown[] = Array.isArray(d)
+    ? d
+    : ((d as any)?.cart ??
+       (d as any)?.data ??
+       (d as any)?.items ??
+       (d as any)?.user?.cart ??
+       (d as any)?.me?.cart ??
+       []);
+
+  // Se o backend ainda não populou os produtos, buscamos o catálogo e resolvemos por id.
+  const needsResolve = raw.some(
+    (it) => typeof it === "string" || (it && typeof it === "object" && !(it as any).product && !(it as any).nameOfProduct),
+  );
+
+  let catalog: Product[] = [];
+  if (needsResolve) {
+    try {
+      catalog = await fetchAllProducts();
+    } catch {
+      catalog = [];
+    }
+  }
+
+  const findById = (id: string) => catalog.find((p) => p._id === id);
+
+  return raw
+    .map<CartItem | null>((it) => {
+      // Caso 1: string com _id
+      if (typeof it === "string") {
+        const p = findById(it);
+        return p ? { product: p, quantity: 1 } : null;
+      }
+      if (!it || typeof it !== "object") return null;
+      const o = it as Record<string, any>;
+
+      // Caso 2: { product: {...}, quantity }
+      if (o.product && typeof o.product === "object") {
+        return { product: o.product as Product, quantity: o.quantity ?? 1 };
+      }
+      // Caso 3: { product: "<id>", quantity }
+      if (typeof o.product === "string") {
+        const p = findById(o.product);
+        return p ? { product: p, quantity: o.quantity ?? 1 } : null;
+      }
+      // Caso 4: { productId | _idProduct | id, quantity }
+      const id = o.productId ?? o._idProduct ?? o.idProduct ?? o.product_id ?? o.id ?? o._id;
+      if (typeof id === "string" && !o.nameOfProduct) {
+        const p = findById(id);
+        return p ? { product: p, quantity: o.quantity ?? 1 } : null;
+      }
+      // Caso 5: o próprio objeto já é um Product
+      if (o.nameOfProduct) {
+        return { product: o as unknown as Product, quantity: o.quantity ?? 1 };
+      }
+      return null;
+    })
+    .filter((x): x is CartItem => !!x);
 }
 
 export async function addToCart(productId: string): Promise<void> {
