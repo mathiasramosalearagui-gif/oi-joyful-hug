@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Package, ShoppingCart } from "lucide-react";
 
 import { addToCart, checkout, fetchProductById, formatBRL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
 
 const productQuery = (id: string) =>
   queryOptions({
@@ -64,7 +65,7 @@ function ProductPage() {
   const { id } = Route.useParams();
   const { data: p } = useSuspenseQuery(productQuery(id));
   const soldOut = !p.available || p.amount === 0;
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
   const addMut = useMutation({
@@ -72,8 +73,21 @@ function ProductPage() {
     onSuccess: () => navigate({ to: "/carrinho" }),
   });
   const buyMut = useMutation({
-    mutationFn: () => checkout(p._id),
-    onSuccess: () => navigate({ to: "/conta" }),
+    mutationFn: async () => {
+      const res = (await checkout(p._id)) as any;
+      const saleId = res?._id ?? res?.sale?._id ?? res?.id;
+      const payload: LastPurchase = {
+        product: p,
+        quantity: 1,
+        total: p.priceOfProduct,
+        saleId,
+        date: new Date().toISOString(),
+        buyerName: user?.name,
+        buyerEmail: user?.email,
+      };
+      sessionStorage.setItem(LAST_PURCHASE_KEY, JSON.stringify(payload));
+    },
+    onSuccess: () => navigate({ to: "/compra/sucesso" }),
   });
 
   function requireAuth(fn: () => void) {

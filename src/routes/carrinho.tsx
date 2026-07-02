@@ -5,6 +5,7 @@ import { Package, Trash2, ShoppingBag, CreditCard } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { fetchMyCart, removeFromCart, checkout, formatBRL, type CartItem } from "@/lib/api";
+import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
