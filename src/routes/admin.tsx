@@ -28,9 +28,11 @@ function AdminLayout() {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Painel</p>
           <h1 className="mt-1 font-display text-2xl font-semibold">Administração</h1>
         </div>
-        <nav className="flex gap-1 text-sm">
+        <nav className="flex flex-wrap gap-1 text-sm">
           <AdminLink to="/admin">Visão geral</AdminLink>
           <AdminLink to="/admin/produtos">Produtos</AdminLink>
+          <AdminLink to="/admin/usuarios">Usuários</AdminLink>
+          <AdminLink to="/admin/vendas">Vendas</AdminLink>
         </nav>
       </header>
       <div className="mt-6">
