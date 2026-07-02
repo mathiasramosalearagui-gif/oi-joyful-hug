@@ -19,10 +19,21 @@ export const api: AxiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+// Rotas públicas do catálogo — NÃO enviar Authorization mesmo se houver token.
+// Alguns middlewares do backend rejeitam/validam tokens em rotas públicas e
+// acabam devolvendo 401/403, quebrando a home para usuários logados.
+const PUBLIC_PATHS = [/^\/product(\/|$|\?)/];
+
+function isPublicPath(url?: string): boolean {
+  if (!url) return false;
+  const path = url.startsWith("http") ? new URL(url).pathname : url.split("?")[0];
+  return PUBLIC_PATHS.some((re) => re.test(path));
+}
+
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = window.localStorage.getItem(TOKEN_KEY);
-    if (token) {
+    if (token && !isPublicPath(config.url)) {
       config.headers = config.headers ?? {};
       (config.headers as Record<string, string>).Authorization = `Bearer ${token}`;
     }
