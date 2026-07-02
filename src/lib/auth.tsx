@@ -47,10 +47,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { token, user: u } = await apiLogin(email, password);
-    setToken(token);
-    const claims = decodeJwt(token);
-    const merged: AuthUser = { ...u, role: claims?.role ?? u.role ?? "user" };
+    const resp = await apiLogin(email, password);
+    console.debug("[auth] /auth/login response:", resp);
+    if (!resp?.token) {
+      throw new Error("Login sem token na resposta do servidor");
+    }
+    setToken(resp.token);
+    const claims = decodeJwt(resp.token);
+
+    let u = resp.user as AuthUser | undefined;
+    if (!u || !u._id) {
+      try {
+        const { fetchMe } = await import("./api");
+        u = await fetchMe();
+        console.debug("[auth] fallback /users/me:", u);
+      } catch (e) {
+        console.warn("[auth] falha ao buscar /users/me após login", e);
+      }
+    }
+
+    const merged: AuthUser = {
+      _id: u?._id ?? claims?._id ?? "",
+      name: u?.name ?? email,
+      email: u?.email ?? email,
+      telephone: u?.telephone,
+      address: u?.address,
+      cpf: u?.cpf,
+      age: u?.age,
+      role: claims?.role ?? u?.role ?? "user",
+    };
     localStorage.setItem(USER_KEY, JSON.stringify(merged));
     setUser(merged);
     return merged;
