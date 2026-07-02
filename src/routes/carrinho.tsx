@@ -122,7 +122,7 @@ function CartPage() {
                     <button
                       type="button"
                       disabled={checkoutMut.isPending}
-                      onClick={() => checkoutMut.mutate(p._id)}
+                      onClick={() => checkoutMut.mutate(it)}
                       className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                     >
                       <CreditCard className="h-4 w-4" /> Comprar
