@@ -5,6 +5,7 @@ import { Package, Trash2, ShoppingBag, CreditCard } from "lucide-react";
 
 import { useAuth } from "@/lib/auth";
 import { fetchMyCart, removeFromCart, checkout, formatBRL, type CartItem } from "@/lib/api";
+import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -17,7 +18,7 @@ export const Route = createFileRoute("/carrinho")({
 });
 
 function CartPage() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
@@ -38,10 +39,24 @@ function CartPage() {
   });
 
   const checkoutMut = useMutation({
-    mutationFn: (id: string) => checkout(id),
+    mutationFn: async (item: CartItem) => {
+      const res = (await checkout(item.product._id)) as any;
+      const saleId = res?._id ?? res?.sale?._id ?? res?.id;
+      const qty = item.quantity ?? 1;
+      const payload: LastPurchase = {
+        product: item.product,
+        quantity: qty,
+        total: item.product.priceOfProduct * qty,
+        saleId,
+        date: new Date().toISOString(),
+        buyerName: user?.name,
+        buyerEmail: user?.email,
+      };
+      sessionStorage.setItem(LAST_PURCHASE_KEY, JSON.stringify(payload));
+    },
     onSuccess: () => {
-      setMessage("Compra realizada com sucesso!");
       qc.invalidateQueries({ queryKey: ["me", "cart"] });
+      navigate({ to: "/compra/sucesso" });
     },
     onError: (err: Error) => setMessage(err.message),
   });
@@ -107,7 +122,7 @@ function CartPage() {
                     <button
                       type="button"
                       disabled={checkoutMut.isPending}
-                      onClick={() => checkoutMut.mutate(p._id)}
+                      onClick={() => checkoutMut.mutate(it)}
                       className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
                     >
                       <CreditCard className="h-4 w-4" /> Comprar

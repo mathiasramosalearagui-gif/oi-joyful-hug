@@ -17,6 +17,9 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as CompraSucessoRouteImport } from './routes/compra.sucesso'
+import { Route as AdminVendasRouteImport } from './routes/admin.vendas'
+import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
 
 const LoginRoute = LoginRouteImport.update({
@@ -59,6 +62,21 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
   path: '/produto/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompraSucessoRoute = CompraSucessoRouteImport.update({
+  id: '/compra/sucesso',
+  path: '/compra/sucesso',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminVendasRoute = AdminVendasRouteImport.update({
+  id: '/vendas',
+  path: '/vendas',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsuariosRoute = AdminUsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProdutosRoute = AdminProdutosRouteImport.update({
   id: '/produtos',
   path: '/produtos',
@@ -73,6 +91,9 @@ export interface FileRoutesByFullPath {
   '/conta': typeof ContaRoute
   '/login': typeof LoginRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/admin/vendas': typeof AdminVendasRoute
+  '/compra/sucesso': typeof CompraSucessoRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -83,6 +104,9 @@ export interface FileRoutesByTo {
   '/conta': typeof ContaRoute
   '/login': typeof LoginRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/admin/vendas': typeof AdminVendasRoute
+  '/compra/sucesso': typeof CompraSucessoRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -95,6 +119,9 @@ export interface FileRoutesById {
   '/conta': typeof ContaRoute
   '/login': typeof LoginRoute
   '/admin/produtos': typeof AdminProdutosRoute
+  '/admin/usuarios': typeof AdminUsuariosRoute
+  '/admin/vendas': typeof AdminVendasRoute
+  '/compra/sucesso': typeof CompraSucessoRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -108,6 +135,9 @@ export interface FileRouteTypes {
     | '/conta'
     | '/login'
     | '/admin/produtos'
+    | '/admin/usuarios'
+    | '/admin/vendas'
+    | '/compra/sucesso'
     | '/produto/$id'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -118,6 +148,9 @@ export interface FileRouteTypes {
     | '/conta'
     | '/login'
     | '/admin/produtos'
+    | '/admin/usuarios'
+    | '/admin/vendas'
+    | '/compra/sucesso'
     | '/produto/$id'
     | '/admin'
   id:
@@ -129,6 +162,9 @@ export interface FileRouteTypes {
     | '/conta'
     | '/login'
     | '/admin/produtos'
+    | '/admin/usuarios'
+    | '/admin/vendas'
+    | '/compra/sucesso'
     | '/produto/$id'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -140,6 +176,7 @@ export interface RootRouteChildren {
   CarrinhoRoute: typeof CarrinhoRoute
   ContaRoute: typeof ContaRoute
   LoginRoute: typeof LoginRoute
+  CompraSucessoRoute: typeof CompraSucessoRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
 }
 
@@ -201,6 +238,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProdutoIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compra/sucesso': {
+      id: '/compra/sucesso'
+      path: '/compra/sucesso'
+      fullPath: '/compra/sucesso'
+      preLoaderRoute: typeof CompraSucessoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/vendas': {
+      id: '/admin/vendas'
+      path: '/vendas'
+      fullPath: '/admin/vendas'
+      preLoaderRoute: typeof AdminVendasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/usuarios': {
+      id: '/admin/usuarios'
+      path: '/usuarios'
+      fullPath: '/admin/usuarios'
+      preLoaderRoute: typeof AdminUsuariosRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/produtos': {
       id: '/admin/produtos'
       path: '/produtos'
@@ -213,11 +271,15 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminProdutosRoute: typeof AdminProdutosRoute
+  AdminUsuariosRoute: typeof AdminUsuariosRoute
+  AdminVendasRoute: typeof AdminVendasRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminProdutosRoute: AdminProdutosRoute,
+  AdminUsuariosRoute: AdminUsuariosRoute,
+  AdminVendasRoute: AdminVendasRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
@@ -230,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarrinhoRoute: CarrinhoRoute,
   ContaRoute: ContaRoute,
   LoginRoute: LoginRoute,
+  CompraSucessoRoute: CompraSucessoRoute,
   ProdutoIdRoute: ProdutoIdRoute,
 }
 export const routeTree = rootRouteImport
