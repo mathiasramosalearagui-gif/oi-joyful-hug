@@ -18,7 +18,7 @@ export const Route = createFileRoute("/carrinho")({
 });
 
 function CartPage() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
@@ -39,10 +39,24 @@ function CartPage() {
   });
 
   const checkoutMut = useMutation({
-    mutationFn: (id: string) => checkout(id),
+    mutationFn: async (item: CartItem) => {
+      const res = (await checkout(item.product._id)) as any;
+      const saleId = res?._id ?? res?.sale?._id ?? res?.id;
+      const qty = item.quantity ?? 1;
+      const payload: LastPurchase = {
+        product: item.product,
+        quantity: qty,
+        total: item.product.priceOfProduct * qty,
+        saleId,
+        date: new Date().toISOString(),
+        buyerName: user?.name,
+        buyerEmail: user?.email,
+      };
+      sessionStorage.setItem(LAST_PURCHASE_KEY, JSON.stringify(payload));
+    },
     onSuccess: () => {
-      setMessage("Compra realizada com sucesso!");
       qc.invalidateQueries({ queryKey: ["me", "cart"] });
+      navigate({ to: "/compra/sucesso" });
     },
     onError: (err: Error) => setMessage(err.message),
   });
