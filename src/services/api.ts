@@ -44,12 +44,21 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (r) => r,
   (error) => {
-    const msg =
-      error?.response?.data?.message ??
-      error?.response?.data?.error ??
-      error?.message ??
-      "Erro de rede";
-    return Promise.reject(new Error(msg));
+    const cfg = error?.config ?? {};
+    const url = `${cfg.baseURL ?? ""}${cfg.url ?? ""}`;
+    const status = error?.response?.status;
+    const serverMsg =
+      error?.response?.data?.message ?? error?.response?.data?.error;
+    const base =
+      serverMsg ??
+      (status
+        ? `HTTP ${status} em ${cfg.method?.toUpperCase() ?? "GET"} ${url}`
+        : `Sem resposta do servidor em ${cfg.method?.toUpperCase() ?? "GET"} ${url} (${error?.code ?? error?.message ?? "network"}). Verifique se o backend está no ar, CORS liberado e se a rota existe.`);
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.error("[api] falha:", { url, method: cfg.method, status, code: error?.code, message: error?.message, data: error?.response?.data });
+    }
+    return Promise.reject(new Error(base));
   },
 );
 
