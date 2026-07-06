@@ -19,11 +19,21 @@ function AdminSales() {
 
   const rows = (sales as any[]).map((s) => {
     const o = s ?? {};
+    const products: any[] = Array.isArray(o.products) ? o.products.filter(Boolean) : [];
+    const productName =
+      products.map((p) => p?.nameOfProduct).filter(Boolean).join(", ") ||
+      o.product?.nameOfProduct ||
+      o.productName ||
+      (typeof o.product === "string" ? o.product : "") ||
+      "—";
+    const price = Number(
+      o.totalPrice ?? o.price ?? o.product?.priceOfProduct ?? 0,
+    );
     return {
       id: o._id ?? o.id ?? "—",
-      product: o.product?.nameOfProduct ?? o.productName ?? o.product ?? "—",
-      user: o.user?.name ?? o.user?.email ?? o.userName ?? o.user ?? "—",
-      price: typeof o.price === "number" ? o.price : (o.product?.priceOfProduct ?? 0),
+      product: productName,
+      user: o.user?.name ?? o.user?.email ?? o.userName ?? o.idUser ?? "—",
+      price: Number.isFinite(price) ? price : 0,
       date: o.createdAt ?? o.date ?? null,
     };
   });
