@@ -275,15 +275,24 @@ export async function fetchMyCart(): Promise<CartItem[]> {
         const p = findById(o.product);
         return p ? { product: p, quantity: o.quantity ?? 1 } : null;
       }
-      // Caso 4: { productId | _idProduct | id, quantity }
+      // Caso 4: { productId | _idProduct | id, quantity/amount }
       const id = o.productId ?? o._idProduct ?? o.idProduct ?? o.product_id ?? o.id ?? o._id;
-      if (typeof id === "string" && !o.nameOfProduct) {
+      const qty = o.quantity ?? o.amount ?? 1;
+      if (typeof id === "string") {
+        // Se veio catálogo, prefira o produto completo; senão, monta um objeto
+        // mínimo com _id garantido (o backend usa `id`, o front usa `_id`).
         const p = findById(id);
-        return p ? { product: p, quantity: o.quantity ?? 1 } : null;
+        if (p) return { product: p, quantity: qty };
+        if (o.nameOfProduct) {
+          return {
+            product: { ...(o as any), _id: id } as Product,
+            quantity: qty,
+          };
+        }
       }
-      // Caso 5: o próprio objeto já é um Product
-      if (o.nameOfProduct) {
-        return { product: o as unknown as Product, quantity: o.quantity ?? 1 };
+      // Caso 5: o próprio objeto já é um Product completo
+      if (o.nameOfProduct && typeof o._id === "string") {
+        return { product: o as unknown as Product, quantity: qty };
       }
       return null;
     })
