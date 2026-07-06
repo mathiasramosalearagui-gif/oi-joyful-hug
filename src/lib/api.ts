@@ -188,14 +188,14 @@ export async function adminDeleteProduct(id: string): Promise<void> {
 
 export async function adminListUsers(): Promise<AuthUser[]> {
   const { data } = await api.get("/admin/users");
-  const p = data as Record<string, unknown> | undefined;
-  if (Array.isArray(data)) return data as AuthUser[];
-  return ((p?.users as AuthUser[]) ?? (p?.data as AuthUser[]) ?? []);
+  if (import.meta.env.DEV) console.log("[api] /admin/users payload:", data);
+  return (findFirstArray(data) as AuthUser[]) ?? [];
 }
 
 export async function adminGetSales(): Promise<unknown[]> {
   const { data } = await api.get("/admin/sales");
-  return (Array.isArray(data) ? data : (data as { sales?: unknown[] })?.sales) ?? [];
+  if (import.meta.env.DEV) console.log("[api] /admin/sales payload:", data);
+  return findFirstArray(data) ?? [];
 }
 
 export async function adminGetRelatory(): Promise<unknown> {
