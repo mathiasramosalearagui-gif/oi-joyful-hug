@@ -280,7 +280,18 @@ export async function fetchMyCart(): Promise<CartItem[]> {
         if (p) return { product: p, quantity: qty };
         if (o.nameOfProduct) {
           return {
-            product: { ...(o as any), _id: id } as Product,
+            product: {
+              priceOfProduct: 0,
+              available: true,
+              category: [],
+              description: "",
+              observations: "",
+              main: false,
+              ...(o as any),
+              _id: id,
+              amount: 1,
+              nameOfProduct: o.nameOfProduct,
+            } as Product,
             quantity: qty,
           };
         }
