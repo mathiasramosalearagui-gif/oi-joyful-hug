@@ -307,8 +307,13 @@ export async function removeFromCart(productId: string): Promise<void> {
   await api.delete(`/users/me/cart/${productId}`);
 }
 
-export async function checkout(productId: string): Promise<unknown> {
-  const { data } = await api.post(`/users/sales/checkout/${productId}`);
+export async function checkout(
+  productId: string,
+  paymentMethod: string = "credit_card",
+): Promise<unknown> {
+  const { data } = await api.post(`/users/sales/checkout/${productId}`, {
+    paymentMethod,
+  });
   return unwrap<unknown>(data);
 }
 
