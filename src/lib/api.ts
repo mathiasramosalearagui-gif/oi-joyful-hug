@@ -77,15 +77,23 @@ function unwrap<T>(payload: unknown): T {
   return payload as T;
 }
 
-function extractProducts(payload: unknown): Product[] {
-  if (Array.isArray(payload)) return payload as Product[];
-  const p = payload as Record<string, unknown> | undefined;
-  if (!p) return [];
-  const candidates = [p.products, p.allProducts, p.product, p.data, p.items];
-  for (const c of candidates) {
-    if (Array.isArray(c)) return c as Product[];
+// Busca recursiva pelo primeiro array dentro do payload — cobre qualquer
+// aninhamento como { data: { products: [...] } } ou { result: { list: [...] } }.
+function findFirstArray(payload: unknown, depth = 0): unknown[] | null {
+  if (depth > 4) return null;
+  if (Array.isArray(payload)) return payload;
+  if (!payload || typeof payload !== "object") return null;
+  for (const v of Object.values(payload as Record<string, unknown>)) {
+    const found = findFirstArray(v, depth + 1);
+    if (found) return found;
   }
-  return [];
+  return null;
+}
+
+function extractProducts(payload: unknown): Product[] {
+  if (import.meta.env.DEV) console.log("[api] extractProducts payload:", payload);
+  const arr = findFirstArray(payload);
+  return (arr as Product[]) ?? [];
 }
 
 /* --------------------------- Catálogo ---------------------------- */
@@ -180,14 +188,14 @@ export async function adminDeleteProduct(id: string): Promise<void> {
 
 export async function adminListUsers(): Promise<AuthUser[]> {
   const { data } = await api.get("/admin/users");
-  const p = data as Record<string, unknown> | undefined;
-  if (Array.isArray(data)) return data as AuthUser[];
-  return ((p?.users as AuthUser[]) ?? (p?.data as AuthUser[]) ?? []);
+  if (import.meta.env.DEV) console.log("[api] /admin/users payload:", data);
+  return (findFirstArray(data) as AuthUser[]) ?? [];
 }
 
 export async function adminGetSales(): Promise<unknown[]> {
   const { data } = await api.get("/admin/sales");
-  return (Array.isArray(data) ? data : (data as { sales?: unknown[] })?.sales) ?? [];
+  if (import.meta.env.DEV) console.log("[api] /admin/sales payload:", data);
+  return findFirstArray(data) ?? [];
 }
 
 export async function adminGetRelatory(): Promise<unknown> {
