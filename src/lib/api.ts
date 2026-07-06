@@ -240,18 +240,13 @@ export async function fetchMyCart(): Promise<CartItem[]> {
        (d as any)?.me?.cart ??
        []);
 
-  // Se o backend ainda não populou os produtos, buscamos o catálogo e resolvemos por id.
-  const needsResolve = raw.some(
-    (it) => typeof it === "string" || (it && typeof it === "object" && !(it as any).product && !(it as any).nameOfProduct),
-  );
-
+  // Sempre buscamos o catálogo para resolver preço/nome — o backend guarda
+  // apenas { id, nameOfProduct, amount } no carrinho, sem priceOfProduct.
   let catalog: Product[] = [];
-  if (needsResolve) {
-    try {
-      catalog = await fetchAllProducts();
-    } catch {
-      catalog = [];
-    }
+  try {
+    catalog = await fetchAllProducts();
+  } catch {
+    catalog = [];
   }
 
   const findById = (id: string) => catalog.find((p) => p._id === id);
