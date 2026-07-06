@@ -323,9 +323,11 @@ export async function checkout(
   return unwrap<unknown>(data);
 }
 
-export function formatBRL(value: number): string {
+export function formatBRL(value: number | string | null | undefined): string {
+  const n = typeof value === "number" ? value : Number(value ?? 0);
+  const safe = Number.isFinite(n) ? n : 0;
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(value);
+  }).format(safe);
 }
