@@ -78,16 +78,14 @@ function unwrap<T>(payload: unknown): T {
 }
 
 function extractProducts(payload: unknown): Product[] {
-  const p = payload as Record<string, unknown> | undefined;
   if (Array.isArray(payload)) return payload as Product[];
+  const p = payload as Record<string, unknown> | undefined;
   if (!p) return [];
-  return (
-    (p.products as Product[]) ??
-    (p.allProducts as Product[]) ??
-    (p.product as Product[]) ??
-    (p.data as Product[]) ??
-    []
-  );
+  const candidates = [p.products, p.allProducts, p.product, p.data, p.items];
+  for (const c of candidates) {
+    if (Array.isArray(c)) return c as Product[];
+  }
+  return [];
 }
 
 /* --------------------------- Catálogo ---------------------------- */
