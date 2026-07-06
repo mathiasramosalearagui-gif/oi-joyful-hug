@@ -240,18 +240,13 @@ export async function fetchMyCart(): Promise<CartItem[]> {
        (d as any)?.me?.cart ??
        []);
 
-  // Se o backend ainda não populou os produtos, buscamos o catálogo e resolvemos por id.
-  const needsResolve = raw.some(
-    (it) => typeof it === "string" || (it && typeof it === "object" && !(it as any).product && !(it as any).nameOfProduct),
-  );
-
+  // Sempre buscamos o catálogo para resolver preço/nome — o backend guarda
+  // apenas { id, nameOfProduct, amount } no carrinho, sem priceOfProduct.
   let catalog: Product[] = [];
-  if (needsResolve) {
-    try {
-      catalog = await fetchAllProducts();
-    } catch {
-      catalog = [];
-    }
+  try {
+    catalog = await fetchAllProducts();
+  } catch {
+    catalog = [];
   }
 
   const findById = (id: string) => catalog.find((p) => p._id === id);
@@ -285,7 +280,18 @@ export async function fetchMyCart(): Promise<CartItem[]> {
         if (p) return { product: p, quantity: qty };
         if (o.nameOfProduct) {
           return {
-            product: { ...(o as any), _id: id } as Product,
+            product: {
+              priceOfProduct: 0,
+              available: true,
+              category: [],
+              description: "",
+              observations: "",
+              main: false,
+              ...(o as any),
+              _id: id,
+              amount: 1,
+              nameOfProduct: o.nameOfProduct,
+            } as Product,
             quantity: qty,
           };
         }
@@ -317,9 +323,11 @@ export async function checkout(
   return unwrap<unknown>(data);
 }
 
-export function formatBRL(value: number): string {
+export function formatBRL(value: number | string | null | undefined): string {
+  const n = typeof value === "number" ? value : Number(value ?? 0);
+  const safe = Number.isFinite(n) ? n : 0;
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: "BRL",
-  }).format(value);
+  }).format(safe);
 }
