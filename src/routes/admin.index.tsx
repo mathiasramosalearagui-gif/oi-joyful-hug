@@ -7,10 +7,11 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function AdminOverview() {
-  const { data: products = [], isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["admin", "products"],
     queryFn: adminListProducts,
   });
+  const products = Array.isArray(data) ? data : [];
 
   const total = products.length;
   const active = products.filter((p) => p.available).length;
