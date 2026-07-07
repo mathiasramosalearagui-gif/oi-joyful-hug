@@ -342,7 +342,7 @@ export async function changePassword(
   oldPassword: string,
   newPassword: string,
 ): Promise<void> {
-  await api.patch("/users/me/password", { oldPassword, newPassword });
+  await api.patch("/users/me/new/password", { oldPassword, newPassword });
 }
 
 export function formatBRL(value: number | string | null | undefined): string {
