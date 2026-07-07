@@ -15,8 +15,11 @@ import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ContaIndexRouteImport } from './routes/conta.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProdutoIdRouteImport } from './routes/produto.$id'
+import { Route as ContaSenhaRouteImport } from './routes/conta.senha'
+import { Route as ContaEditarRouteImport } from './routes/conta.editar'
 import { Route as CompraSucessoRouteImport } from './routes/compra.sucesso'
 import { Route as AdminVendasRouteImport } from './routes/admin.vendas'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
@@ -52,6 +55,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContaIndexRoute = ContaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ContaRoute,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -61,6 +69,16 @@ const ProdutoIdRoute = ProdutoIdRouteImport.update({
   id: '/produto/$id',
   path: '/produto/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ContaSenhaRoute = ContaSenhaRouteImport.update({
+  id: '/senha',
+  path: '/senha',
+  getParentRoute: () => ContaRoute,
+} as any)
+const ContaEditarRoute = ContaEditarRouteImport.update({
+  id: '/editar',
+  path: '/editar',
+  getParentRoute: () => ContaRoute,
 } as any)
 const CompraSucessoRoute = CompraSucessoRouteImport.update({
   id: '/compra/sucesso',
@@ -88,27 +106,32 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
-  '/conta': typeof ContaRoute
+  '/conta': typeof ContaRouteWithChildren
   '/login': typeof LoginRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/vendas': typeof AdminVendasRoute
   '/compra/sucesso': typeof CompraSucessoRoute
+  '/conta/editar': typeof ContaEditarRoute
+  '/conta/senha': typeof ContaSenhaRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/conta/': typeof ContaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
-  '/conta': typeof ContaRoute
   '/login': typeof LoginRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/vendas': typeof AdminVendasRoute
   '/compra/sucesso': typeof CompraSucessoRoute
+  '/conta/editar': typeof ContaEditarRoute
+  '/conta/senha': typeof ContaSenhaRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin': typeof AdminIndexRoute
+  '/conta': typeof ContaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,14 +139,17 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteWithChildren
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
-  '/conta': typeof ContaRoute
+  '/conta': typeof ContaRouteWithChildren
   '/login': typeof LoginRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/vendas': typeof AdminVendasRoute
   '/compra/sucesso': typeof CompraSucessoRoute
+  '/conta/editar': typeof ContaEditarRoute
+  '/conta/senha': typeof ContaSenhaRoute
   '/produto/$id': typeof ProdutoIdRoute
   '/admin/': typeof AdminIndexRoute
+  '/conta/': typeof ContaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,21 +164,26 @@ export interface FileRouteTypes {
     | '/admin/usuarios'
     | '/admin/vendas'
     | '/compra/sucesso'
+    | '/conta/editar'
+    | '/conta/senha'
     | '/produto/$id'
     | '/admin/'
+    | '/conta/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/cadastro'
     | '/carrinho'
-    | '/conta'
     | '/login'
     | '/admin/produtos'
     | '/admin/usuarios'
     | '/admin/vendas'
     | '/compra/sucesso'
+    | '/conta/editar'
+    | '/conta/senha'
     | '/produto/$id'
     | '/admin'
+    | '/conta'
   id:
     | '__root__'
     | '/'
@@ -165,8 +196,11 @@ export interface FileRouteTypes {
     | '/admin/usuarios'
     | '/admin/vendas'
     | '/compra/sucesso'
+    | '/conta/editar'
+    | '/conta/senha'
     | '/produto/$id'
     | '/admin/'
+    | '/conta/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -174,7 +208,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   CadastroRoute: typeof CadastroRoute
   CarrinhoRoute: typeof CarrinhoRoute
-  ContaRoute: typeof ContaRoute
+  ContaRoute: typeof ContaRouteWithChildren
   LoginRoute: typeof LoginRoute
   CompraSucessoRoute: typeof CompraSucessoRoute
   ProdutoIdRoute: typeof ProdutoIdRoute
@@ -224,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conta/': {
+      id: '/conta/'
+      path: '/'
+      fullPath: '/conta/'
+      preLoaderRoute: typeof ContaIndexRouteImport
+      parentRoute: typeof ContaRoute
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -237,6 +278,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/produto/$id'
       preLoaderRoute: typeof ProdutoIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/conta/senha': {
+      id: '/conta/senha'
+      path: '/senha'
+      fullPath: '/conta/senha'
+      preLoaderRoute: typeof ContaSenhaRouteImport
+      parentRoute: typeof ContaRoute
+    }
+    '/conta/editar': {
+      id: '/conta/editar'
+      path: '/editar'
+      fullPath: '/conta/editar'
+      preLoaderRoute: typeof ContaEditarRouteImport
+      parentRoute: typeof ContaRoute
     }
     '/compra/sucesso': {
       id: '/compra/sucesso'
@@ -285,12 +340,26 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ContaRouteChildren {
+  ContaEditarRoute: typeof ContaEditarRoute
+  ContaSenhaRoute: typeof ContaSenhaRoute
+  ContaIndexRoute: typeof ContaIndexRoute
+}
+
+const ContaRouteChildren: ContaRouteChildren = {
+  ContaEditarRoute: ContaEditarRoute,
+  ContaSenhaRoute: ContaSenhaRoute,
+  ContaIndexRoute: ContaIndexRoute,
+}
+
+const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   CadastroRoute: CadastroRoute,
   CarrinhoRoute: CarrinhoRoute,
-  ContaRoute: ContaRoute,
+  ContaRoute: ContaRouteWithChildren,
   LoginRoute: LoginRoute,
   CompraSucessoRoute: CompraSucessoRoute,
   ProdutoIdRoute: ProdutoIdRoute,

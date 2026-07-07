@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-ro
 import { useSuspenseQuery, queryOptions, useMutation } from "@tanstack/react-query";
 import { ArrowLeft, Check, Package, ShoppingCart } from "lucide-react";
 
-import { addToCart, checkout, fetchProductById, formatBRL } from "@/lib/api";
+import { addToCart, buyNow, fetchProductById, formatBRL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
 
@@ -74,7 +74,7 @@ function ProductPage() {
   });
   const buyMut = useMutation({
     mutationFn: async () => {
-      const res = (await checkout(p._id)) as any;
+      const res = (await buyNow(p._id)) as any;
       const saleId = res?._id ?? res?.sale?._id ?? res?.id;
       const payload: LastPurchase = {
         product: p,

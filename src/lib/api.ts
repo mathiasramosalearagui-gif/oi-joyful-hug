@@ -323,6 +323,28 @@ export async function checkout(
   return unwrap<unknown>(data);
 }
 
+/** Compra direta: adiciona no carrinho e em seguida faz o checkout. */
+export async function buyNow(
+  productId: string,
+  paymentMethod: string = "credit_card",
+): Promise<unknown> {
+  try {
+    await addToCart(productId);
+  } catch (e) {
+    // se o item já estiver no carrinho, seguimos direto para o checkout
+    if (import.meta.env.DEV) console.warn("[buyNow] addToCart falhou, seguindo para checkout:", e);
+  }
+  return checkout(productId, paymentMethod);
+}
+
+/** Atualiza a senha do usuário logado. */
+export async function changePassword(
+  oldPassword: string,
+  newPassword: string,
+): Promise<void> {
+  await api.patch("/users/me/password", { oldPassword, newPassword });
+}
+
 export function formatBRL(value: number | string | null | undefined): string {
   const n = typeof value === "number" ? value : Number(value ?? 0);
   const safe = Number.isFinite(n) ? n : 0;
