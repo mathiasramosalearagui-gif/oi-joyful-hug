@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 
-export const Route = createFileRoute("/conta")({
+export const Route = createFileRoute("/conta/")({
   head: () => ({
     meta: [{ title: "Minha conta — Estação Infinita" }],
   }),
