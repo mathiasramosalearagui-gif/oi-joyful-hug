@@ -32,10 +32,22 @@ function AccountPage() {
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3">
+        <Link
+          to="/conta/editar"
+          className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+        >
+          Editar meus dados
+        </Link>
+        <Link
+          to="/conta/senha"
+          className="inline-flex h-10 items-center rounded-md border border-border bg-surface px-4 text-sm font-medium text-foreground hover:bg-surface/70"
+        >
+          Alterar senha
+        </Link>
         {isAdmin && (
           <Link
             to="/admin"
-            className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
+            className="inline-flex h-10 items-center rounded-md border border-border bg-surface px-4 text-sm font-medium text-foreground hover:bg-surface/70"
           >
             Ir para painel Admin
           </Link>
