@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { ImageIcon, Pencil, Plus, Power, Trash2, Upload } from "lucide-react";
 import {
   adminCreateProduct,
   adminDeleteProduct,
   adminListProducts,
   adminToggleProduct,
   adminUpdateProduct,
+  adminUploadProductImage,
   formatBRL,
   type Product,
   type ProductInput,
@@ -38,6 +39,7 @@ function AdminProducts() {
 
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
+  const [imaging, setImaging] = useState<Product | null>(null);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin", "products"] });
 
@@ -122,6 +124,9 @@ function AdminProducts() {
                     <IconBtn label="Editar" onClick={() => setEditing(p)}>
                       <Pencil className="h-4 w-4" />
                     </IconBtn>
+                    <IconBtn label="Imagem" onClick={() => setImaging(p)}>
+                      <ImageIcon className="h-4 w-4" />
+                    </IconBtn>
                     <IconBtn
                       label={p.available ? "Desativar" : "Ativar"}
                       onClick={() => toggleMut.mutate({ id: p._id, active: !p.available })}
@@ -158,6 +163,96 @@ function AdminProducts() {
           }}
         />
       )}
+
+      {imaging && (
+        <ImageUploadDialog
+          product={imaging}
+          onClose={() => setImaging(null)}
+          onUploaded={() => {
+            invalidate();
+            setImaging(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ImageUploadDialog({
+  product,
+  onClose,
+  onUploaded,
+}: {
+  product: Product;
+  onClose: () => void;
+  onUploaded: () => void;
+}) {
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const mut = useMutation({
+    mutationFn: () => {
+      if (!file) throw new Error("Selecione uma imagem.");
+      return adminUploadProductImage(product._id, file);
+    },
+    onSuccess: onUploaded,
+  });
+
+  function onPick(f: File | null) {
+    setFile(f);
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(f ? URL.createObjectURL(f) : null);
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur">
+      <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6">
+        <h3 className="font-display text-lg font-semibold">Imagem do produto</h3>
+        <p className="mt-1 text-sm text-muted-foreground">{product.nameOfProduct}</p>
+
+        <div className="mt-4 flex items-center justify-center overflow-hidden rounded-lg border border-border/60 bg-background aspect-square">
+          {preview ? (
+            <img src={preview} alt="Prévia" className="h-full w-full object-cover" />
+          ) : product.image ? (
+            <img src={product.image} alt={product.nameOfProduct} className="h-full w-full object-cover" />
+          ) : (
+            <ImageIcon className="h-12 w-12 text-muted-foreground" />
+          )}
+        </div>
+
+        <label className="mt-4 flex h-10 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-border bg-background text-sm text-muted-foreground hover:text-foreground">
+          <Upload className="h-4 w-4" />
+          {file ? file.name : "Selecionar imagem…"}
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+          />
+        </label>
+
+        {mut.error && (
+          <p className="mt-2 text-sm text-destructive">{(mut.error as Error).message}</p>
+        )}
+
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-9 rounded-md border border-border bg-background px-4 text-sm"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            disabled={!file || mut.isPending}
+            onClick={() => mut.mutate()}
+            className="h-9 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+          >
+            {mut.isPending ? "Enviando…" : "Enviar"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

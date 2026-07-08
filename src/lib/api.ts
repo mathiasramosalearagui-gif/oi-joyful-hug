@@ -345,6 +345,19 @@ export async function changePassword(
   await api.patch("/users/me/new/password", { oldPassword, newPassword });
 }
 
+/** Envia/atualiza a imagem de um produto (admin). */
+export async function adminUploadProductImage(
+  productId: string,
+  file: File,
+): Promise<unknown> {
+  const fd = new FormData();
+  fd.append("image", file);
+  const { data } = await api.patch(`/image/${productId}`, fd, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return unwrap<unknown>(data);
+}
+
 export function formatBRL(value: number | string | null | undefined): string {
   const n = typeof value === "number" ? value : Number(value ?? 0);
   const safe = Number.isFinite(n) ? n : 0;
