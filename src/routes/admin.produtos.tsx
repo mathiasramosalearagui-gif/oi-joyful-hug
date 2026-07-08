@@ -124,6 +124,9 @@ function AdminProducts() {
                     <IconBtn label="Editar" onClick={() => setEditing(p)}>
                       <Pencil className="h-4 w-4" />
                     </IconBtn>
+                    <IconBtn label="Imagem" onClick={() => setImaging(p)}>
+                      <ImageIcon className="h-4 w-4" />
+                    </IconBtn>
                     <IconBtn
                       label={p.available ? "Desativar" : "Ativar"}
                       onClick={() => toggleMut.mutate({ id: p._id, active: !p.available })}
