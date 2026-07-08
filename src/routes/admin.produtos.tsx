@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
-import { Pencil, Plus, Power, Trash2 } from "lucide-react";
+import { ImageIcon, Pencil, Plus, Power, Trash2, Upload } from "lucide-react";
 import {
   adminCreateProduct,
   adminDeleteProduct,
   adminListProducts,
   adminToggleProduct,
   adminUpdateProduct,
+  adminUploadProductImage,
   formatBRL,
   type Product,
   type ProductInput,
