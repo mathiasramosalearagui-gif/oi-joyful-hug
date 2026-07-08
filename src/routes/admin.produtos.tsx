@@ -39,6 +39,7 @@ function AdminProducts() {
 
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
+  const [imaging, setImaging] = useState<Product | null>(null);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["admin", "products"] });
 
