@@ -175,6 +175,15 @@ function ProductPage() {
             </div>
           </div>
 
+          <div className="mt-4 rounded-xl border border-border/60 bg-surface/40 p-4">
+            <CheckoutOptionsFields
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              coupon={coupon}
+              onCouponChange={setCoupon}
+            />
+          </div>
+
           <div className="mt-4 flex gap-3">
             <button
               type="button"
