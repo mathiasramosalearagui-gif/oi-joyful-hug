@@ -6,6 +6,7 @@ import { Package, Trash2, ShoppingBag, CreditCard } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { fetchMyCart, removeFromCart, checkout, formatBRL, type CartItem } from "@/lib/api";
 import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
+import { CheckoutOptionsFields } from "@/components/checkout-options";
 
 export const Route = createFileRoute("/carrinho")({
   head: () => ({
@@ -22,6 +23,8 @@ function CartPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [message, setMessage] = useState<string | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState("credit_card");
+  const [coupon, setCoupon] = useState("");
 
   useEffect(() => {
     if (!loading && !isAuthenticated) navigate({ to: "/login" });
@@ -40,7 +43,7 @@ function CartPage() {
 
   const checkoutMut = useMutation({
     mutationFn: async (item: CartItem) => {
-      const res = (await checkout(item.product._id)) as any;
+      const res = (await checkout(item.product._id, { paymentMethod, coupon })) as any;
       const saleId = res?._id ?? res?.sale?._id ?? res?.id;
       const qty = item.quantity ?? 1;
       const payload: LastPurchase = {
@@ -142,17 +145,25 @@ function CartPage() {
             })}
           </ul>
 
-          <aside className="h-fit rounded-xl border border-border/60 bg-surface/40 p-5">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Resumo</p>
-            <div className="mt-3 flex items-baseline justify-between">
-              <span className="text-sm text-muted-foreground">Total</span>
-              <span className="font-display text-2xl font-semibold text-primary">
-                {formatBRL(total)}
-              </span>
+          <aside className="h-fit space-y-4 rounded-xl border border-border/60 bg-surface/40 p-5">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Resumo</p>
+              <div className="mt-3 flex items-baseline justify-between">
+                <span className="text-sm text-muted-foreground">Total</span>
+                <span className="font-display text-2xl font-semibold text-primary">
+                  {formatBRL(total)}
+                </span>
+              </div>
             </div>
-            <p className="mt-3 text-xs text-muted-foreground">
+            <CheckoutOptionsFields
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              coupon={coupon}
+              onCouponChange={setCoupon}
+            />
+            <p className="text-xs text-muted-foreground">
               O checkout é feito por item. Clique em <strong>Comprar</strong> ao lado de cada
-              produto para finalizar.
+              produto para finalizar usando a forma de pagamento e o cupom selecionados.
             </p>
           </aside>
         </div>

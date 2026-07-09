@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { ArrowLeft, Check, Package, ShoppingCart } from "lucide-react";
 
 import { addToCart, buyNow, fetchProductById, formatBRL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { CheckoutOptionsFields } from "@/components/checkout-options";
 import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
 
 const productQuery = (id: string) =>
@@ -72,9 +74,11 @@ function ProductPage() {
     mutationFn: () => addToCart(p._id),
     onSuccess: () => navigate({ to: "/carrinho" }),
   });
+  const [paymentMethod, setPaymentMethod] = useState("credit_card");
+  const [coupon, setCoupon] = useState("");
   const buyMut = useMutation({
     mutationFn: async () => {
-      const res = (await buyNow(p._id)) as any;
+      const res = (await buyNow(p._id, { paymentMethod, coupon })) as any;
       const saleId = res?._id ?? res?.sale?._id ?? res?.id;
       const payload: LastPurchase = {
         product: p,
@@ -169,6 +173,15 @@ function ProductPage() {
                 </span>
               )}
             </div>
+          </div>
+
+          <div className="mt-4 rounded-xl border border-border/60 bg-surface/40 p-4">
+            <CheckoutOptionsFields
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              coupon={coupon}
+              onCouponChange={setCoupon}
+            />
           </div>
 
           <div className="mt-4 flex gap-3">

@@ -24,6 +24,7 @@ import { Route as CompraSucessoRouteImport } from './routes/compra.sucesso'
 import { Route as AdminVendasRouteImport } from './routes/admin.vendas'
 import { Route as AdminUsuariosRouteImport } from './routes/admin.usuarios'
 import { Route as AdminProdutosRouteImport } from './routes/admin.produtos'
+import { Route as AdminCuponsRouteImport } from './routes/admin.cupons'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -100,6 +101,11 @@ const AdminProdutosRoute = AdminProdutosRouteImport.update({
   path: '/produtos',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCuponsRoute = AdminCuponsRouteImport.update({
+  id: '/cupons',
+  path: '/cupons',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/carrinho': typeof CarrinhoRoute
   '/conta': typeof ContaRouteWithChildren
   '/login': typeof LoginRoute
+  '/admin/cupons': typeof AdminCuponsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/vendas': typeof AdminVendasRoute
@@ -123,6 +130,7 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
+  '/admin/cupons': typeof AdminCuponsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/vendas': typeof AdminVendasRoute
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/carrinho': typeof CarrinhoRoute
   '/conta': typeof ContaRouteWithChildren
   '/login': typeof LoginRoute
+  '/admin/cupons': typeof AdminCuponsRoute
   '/admin/produtos': typeof AdminProdutosRoute
   '/admin/usuarios': typeof AdminUsuariosRoute
   '/admin/vendas': typeof AdminVendasRoute
@@ -160,6 +169,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/conta'
     | '/login'
+    | '/admin/cupons'
     | '/admin/produtos'
     | '/admin/usuarios'
     | '/admin/vendas'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/carrinho'
     | '/login'
+    | '/admin/cupons'
     | '/admin/produtos'
     | '/admin/usuarios'
     | '/admin/vendas'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
     | '/carrinho'
     | '/conta'
     | '/login'
+    | '/admin/cupons'
     | '/admin/produtos'
     | '/admin/usuarios'
     | '/admin/vendas'
@@ -321,10 +333,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminProdutosRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/cupons': {
+      id: '/admin/cupons'
+      path: '/cupons'
+      fullPath: '/admin/cupons'
+      preLoaderRoute: typeof AdminCuponsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
+  AdminCuponsRoute: typeof AdminCuponsRoute
   AdminProdutosRoute: typeof AdminProdutosRoute
   AdminUsuariosRoute: typeof AdminUsuariosRoute
   AdminVendasRoute: typeof AdminVendasRoute
@@ -332,6 +352,7 @@ interface AdminRouteChildren {
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminCuponsRoute: AdminCuponsRoute,
   AdminProdutosRoute: AdminProdutosRoute,
   AdminUsuariosRoute: AdminUsuariosRoute,
   AdminVendasRoute: AdminVendasRoute,
@@ -367,13 +388,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

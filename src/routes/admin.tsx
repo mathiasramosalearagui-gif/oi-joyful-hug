@@ -33,6 +33,7 @@ function AdminLayout() {
           <AdminLink to="/admin/produtos">Produtos</AdminLink>
           <AdminLink to="/admin/usuarios">Usuários</AdminLink>
           <AdminLink to="/admin/vendas">Vendas</AdminLink>
+          <AdminLink to="/admin/cupons">Cupons</AdminLink>
         </nav>
       </header>
       <div className="mt-6">

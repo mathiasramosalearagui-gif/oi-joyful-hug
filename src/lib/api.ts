@@ -313,28 +313,70 @@ export async function removeFromCart(productId: string): Promise<void> {
   await api.delete(`/users/me/cart/${productId}`);
 }
 
+export interface CheckoutOptions {
+  paymentMethod?: string;
+  coupon?: string;
+}
+
 export async function checkout(
   productId: string,
-  paymentMethod: string = "credit_card",
+  options: string | CheckoutOptions = {},
 ): Promise<unknown> {
-  const { data } = await api.post(`/users/sales/checkout/${productId}`, {
-    paymentMethod,
-  });
+  const opts: CheckoutOptions =
+    typeof options === "string" ? { paymentMethod: options } : options;
+  const body: Record<string, unknown> = {
+    paymentMethod: opts.paymentMethod ?? "credit_card",
+  };
+  if (opts.coupon && opts.coupon.trim()) body.coupon = opts.coupon.trim();
+  const { data } = await api.post(`/users/sales/checkout/${productId}`, body);
   return unwrap<unknown>(data);
 }
 
 /** Compra direta: adiciona no carrinho e em seguida faz o checkout. */
 export async function buyNow(
   productId: string,
-  paymentMethod: string = "credit_card",
+  options: string | CheckoutOptions = {},
 ): Promise<unknown> {
   try {
     await addToCart(productId);
   } catch (e) {
-    // se o item já estiver no carrinho, seguimos direto para o checkout
     if (import.meta.env.DEV) console.warn("[buyNow] addToCart falhou, seguindo para checkout:", e);
   }
-  return checkout(productId, paymentMethod);
+  return checkout(productId, options);
+}
+
+/* ------------------------------ Cupons (admin) ---------------------------- */
+
+export type CouponStatus = "percentage" | "fixed";
+
+export interface CouponInput {
+  name: string;
+  value: number;
+  status: CouponStatus;
+  active?: boolean;
+}
+
+export async function adminCreateCoupon(input: CouponInput): Promise<unknown> {
+  const { data } = await api.post("/coupon/create", input);
+  return unwrap<unknown>(data);
+}
+
+export async function adminUpdateCoupon(
+  couponName: string,
+  input: Partial<CouponInput>,
+): Promise<unknown> {
+  const { data } = await api.put(`/coupon/update/${encodeURIComponent(couponName)}`, input);
+  return unwrap<unknown>(data);
+}
+
+export async function adminDesactiveCoupon(couponName: string): Promise<unknown> {
+  const { data } = await api.patch(`/coupon/desactive/${encodeURIComponent(couponName)}`);
+  return unwrap<unknown>(data);
+}
+
+export async function adminDeleteCoupon(couponName: string): Promise<unknown> {
+  const { data } = await api.delete(`/coupon/delete/${encodeURIComponent(couponName)}`);
+  return unwrap<unknown>(data);
 }
 
 /** Atualiza a senha do usuário logado. */
