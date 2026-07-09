@@ -74,9 +74,11 @@ function ProductPage() {
     mutationFn: () => addToCart(p._id),
     onSuccess: () => navigate({ to: "/carrinho" }),
   });
+  const [paymentMethod, setPaymentMethod] = useState("credit_card");
+  const [coupon, setCoupon] = useState("");
   const buyMut = useMutation({
     mutationFn: async () => {
-      const res = (await buyNow(p._id)) as any;
+      const res = (await buyNow(p._id, { paymentMethod, coupon })) as any;
       const saleId = res?._id ?? res?.sale?._id ?? res?.id;
       const payload: LastPurchase = {
         product: p,
