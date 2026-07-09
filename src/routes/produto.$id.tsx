@@ -1,9 +1,11 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions, useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { ArrowLeft, Check, Package, ShoppingCart } from "lucide-react";
 
 import { addToCart, buyNow, fetchProductById, formatBRL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { CheckoutOptionsFields } from "@/components/checkout-options";
 import { LAST_PURCHASE_KEY, type LastPurchase } from "@/routes/compra.sucesso";
 
 const productQuery = (id: string) =>
