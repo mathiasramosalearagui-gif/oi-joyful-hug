@@ -46,7 +46,7 @@ function CartPage() {
       const payload: LastPurchase = {
         product: item.product,
         quantity: qty,
-        total: item.product.priceOfProduct * qty,
+        total: res?.totalPrice || item.product.priceOfProduct * qty,
         saleId,
         date: new Date().toISOString(),
         buyerName: user?.name,
